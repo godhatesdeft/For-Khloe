@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Letter For You 💌</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Dancing+Script:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <style>
+        :root {
+            --bg-rose: #fdf2f4;
+            --bg-cream: #fffcf7;
+            --envelope-body: #f3d6ce;
+            --envelope-flap: #eabfb4;
+            --envelope-pocket: #edd0c8;
+            --wax-red: #b91c1c;
+            --ink-dark: #3e2723;
+            --accent-rose: #e11d48;
+        }
+        body {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            background: radial-gradient(circle at top, #ffe4e8 0%, #fdf2f4 45%, #f9e5e8 100%);
+            color: var(--ink-dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+        .font-handwriting {
+            font-family: 'Dancing Script', cursive;
+        }
+        .font-sans-ui {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .paper-texture {
+            background-color: var(--bg-cream);
+            background-image: 
+                radial-gradient(rgba(225, 29, 72, 0.03) 1px, transparent 0),
+                linear-gradient(to bottom, transparent 96%, rgba(180, 140, 130, 0.14) 100%);
+            background-size: 24px 24px, 100% 2.3rem;
+            box-shadow: 
+                0 25px 60px -15px rgba(136, 19, 55, 0.18),
+                0 0 1px 1px rgba(180, 140, 130, 0.25),
+                inset 0 0 50px rgba(245, 222, 210, 0.45);
+        }
+        .envelope-stage {
+            perspective: 1200px;
+            transition: all 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .envelope-wrapper {
+            position: relative;
+            width: 340px;
+            height: 230px;
+            background-color: #e2b4a7;
+            border-radius: 0 0 14px 14px;
+            box-shadow: 0 25px 50px -12px rgba(136, 19, 55, 0.28);
+            cursor: pointer;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        @media (min-width: 640px) {
+            .envelope-wrapper {
+                width: 440px;
+                height: 290px;
+            }
+        }
+        .envelope-wrapper:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 32px 64px -12px rgba(136, 19, 55, 0.35);
+        }
+        .envelope-card-preview {
+            position: absolute;
+            bottom: 12px;
+            left: 5%;
+            width: 90%;
+            height: 86%;
+            background: var(--bg-cream);
+            border-radius: 10px;
+            z-index: 2;
+            transition: transform 0.85s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            border: 1px solid #f5ebe6;
+        }
+        .envelope-pocket {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            border-radius: 0 0 14px 14px;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .envelope-pocket::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #f3d5cc 50%, #ecc6bb 50%);
+            clip-path: polygon(0 0, 52% 55%, 0 100%);
+        }
+        .envelope-pocket::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(225deg, #f0cec4 50%, #e7bdb1 50%);
+            clip-path: polygon(100% 0, 48% 55%, 100% 100%);
+        }
+        .envelope-bottom-fold {
+            position: absolute;
+            inset: 0;
+            z-index: 4;
+            background: linear-gradient(to top, #f7ded6 0%, #f1cfc5 100%);
+            clip-path: polygon(0 100%, 50% 44%, 100% 100%);
+            border-radius: 0 0 14px 14px;
+            pointer-events: none;
+            filter: drop-shadow(0 -3px 6px rgba(100, 40, 40, 0.08));
+        }
+        .envelope-top-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 58%;
+            background: linear-gradient(to bottom, #eabfb4 0%, #e3b2a6 100%);
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            transform-origin: top center;
+            transition: transform 0.65s cubic-bezier(0.4, 0, 0.2, 1), z-index 0.2s 0.3s;
+            z-index: 5;
+            filter: drop-shadow(0 6px 8px rgba(80, 20, 20, 0.15));
+        }
+        .wax-seal {
+            position: absolute;
+            top: 54%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 6;
+            width: 74px;
+            height: 74px;
+            border-radius: 9999px;
+            background: radial-gradient(circle at 32% 30%, #ef4444, #b91c1c 65%, #7f1d1d 100%);
+            box-shadow: 
+                0 6px 16px rgba(127, 29, 29, 0.45),
+                inset 0 2px 4px rgba(255, 255, 255, 0.35),
+                inset 0 -3px 6px rgba(69, 10, 10, 0.65);
+            border: 3px dashed rgba(254, 202, 202, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: pulse-seal 2.4s infinite;
+        }
+        .envelope-wrapper:hover .wax-seal {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+        @keyframes pulse-seal {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.45), 0 6px 16px rgba(127, 29, 29, 0.45);
+            }
+            50% {
+                box-shadow: 0 0 0 14px rgba(225, 29, 72, 0), 0 6px 20px rgba(127, 29, 29, 0.55);
+            }
+        }
+        .envelope-wrapper.is-open .envelope-top-flap {
+            transform: rotateX(180deg);
+            z-index: 1;
+        }
+        .envelope-wrapper.is-open .wax-seal {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.3);
+            pointer-events: none;
+        }
+        .envelope-wrapper.is-open .envelope-card-preview {
+            transform: translateY(-125px);
+        }
+        .polaroid-card {
+            background: #ffffff;
+            padding: 12px 12px 28px 12px;
+            box-shadow: 
+                0 12px 28px -6px rgba(62, 39, 35, 0.15),
+                0 2px 6px -1px rgba(62, 39, 35, 0.08);
+            border: 1px solid rgba(230, 215, 210, 0.7);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+        .polaroid-card::before {
+            content: '';
+            position: absolute;
+            top: -11px;
+            left: 50%;
+            transform: translateX(-50%) rotate(-2deg);
+            width: 85px;
+            height: 24px;
+            background: rgba(254, 205, 211, 0.65);
+            border-left: 2px dotted rgba(255,255,255,0.8);
+            border-right: 2px dotted rgba(255,255,255,0.8);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            z-index: 10;
+        }
+        .polaroid-tilt-left {
+            transform: rotate(-3.2deg);
+        }
+        .polaroid-tilt-center {
+            transform: rotate(1.8deg) translateY(6px);
+        }
+        .polaroid-tilt-right {
+            transform: rotate(-2.4deg);
+        }
+        .polaroid-card:hover {
+            transform: rotate(0deg) scale(1.06) translateY(-6px) !important;
+            box-shadow: 0 22px 38px -8px rgba(136, 19, 55, 0.22);
+            z-index: 20;
+        }
+        .letter-container {
+            opacity: 0;
+            transform: translateY(40px) scale(0.96);
+            transition: opacity 0.9s ease, transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+            display: none;
+        }
+        .letter-container.show-letter {
+            display: block;
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        #petals-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body class="relative flex flex-col items-center justify-center min-h-screen py-8 px-4 sm:px-6">
+
+    <canvas id="petals-canvas"></canvas>
+
+    <audio id="bg-music" loop preload="auto">
+        <source src="song.mp3" type="audio/mp3">
+    </audio>
+
+    <div class="fixed top-4 right-4 z-50 flex items-center gap-2 font-sans-ui">
+        <button id="music-toggle-btn" onclick="toggleBackgroundMusic()" class="bg-white/90 hover:bg-white text-rose-700 text-xs sm:text-sm font-medium px-3.5 py-2 rounded-full shadow-md border border-rose-200 flex items-center gap-1.5 transition hover:scale-105" title="Play / Pause Silent Sanctuary - 14">
+            <span id="music-icon">🎵</span>
+            <span id="music-label" class="hidden sm:inline">Play Song</span>
+        </button>
+    </div>
+
+    <section id="envelope-screen" class="envelope-stage relative z-10 flex flex-col items-center justify-center my-auto py-12">
+        <div class="text-center mb-8 px-4">
+            <span class="inline-block px-3.5 py-1 rounded-full bg-rose-100/90 text-rose-700 font-sans-ui text-xs uppercase tracking-widest mb-3 shadow-sm border border-rose-200/60">
+                Happy 2nd supposed-to-be Anniversary!
+            </span>
+            <h1 class="font-handwriting text-4xl sm:text-5xl text-rose-900 drop-shadow-sm">
+                For Khloe, The Greatest Love of My Life
+            </h1>
+            <p class="text-rose-800/80 italic text-lg sm:text-xl mt-1">
+                OPEN ONLY AT THURSDAY, OCTOBER 22!
+            </p>
+        </div>
+
+        <div id="envelope" class="envelope-wrapper" onclick="openEnvelope()" role="button" tabindex="0" aria-label="Click to open letter">
+            <div class="envelope-top-flap"></div>
+            <div class="envelope-card-preview text-center">
+                <p class="font-handwriting text-2xl sm:text-3xl text-rose-800 mb-1">My Baby,</p>
+                <div class="w-16 h-0.5 bg-rose-200 my-1 rounded-full"></div>
+                <p class="text-xs sm:text-sm text-stone-500 italic">Unfolding your letter...</p>
+            </div>
+            <div class="envelope-pocket"></div>
+            <div class="envelope-bottom-fold"></div>
+            <div class="wax-seal group">
+                <svg class="w-8 h-8 text-rose-100 drop-shadow fill-current" viewBox="0 0 24 24">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+            </div>
+        </div>
+
+        <button onclick="openEnvelope()" class="mt-9 group flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white font-sans-ui font-medium text-sm sm:text-base px-6 py-3 rounded-full shadow-lg shadow-rose-500/25 transition-all hover:scale-105 active:scale-95">
+            <span>💌 Click to Open Letter</span>
+        </button>
+    </section>
+
+    <main id="letter-screen" class="letter-container relative z-10 w-full max-w-3xl my-6 sm:my-10">
+        <article class="paper-texture relative rounded-2xl sm:rounded-3xl p-6 sm:p-12 md:p-16 border border-rose-200/60 overflow-hidden">
+            <div class="pointer-events-none select-none absolute top-4 left-4 text-rose-300/70 text-2xl">❦</div>
+            <div class="pointer-events-none select-none absolute top-4 right-4 text-rose-300/70 text-2xl transform scale-x-[-1]">❦</div>
+            <div class="pointer-events-none select-none absolute bottom-4 left-4 text-rose-300/70 text-2xl transform scale-y-[-1]">❦</div>
+            <div class="pointer-events-none select-none absolute bottom-4 right-4 text-rose-300/70 text-2xl transform scale-[-1]">❦</div>
+
+            <header class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-rose-200/70 pb-5 mb-8 gap-2">
+                <div>
+                    <h2 class="font-handwriting text-4xl sm:text-5xl text-rose-900">
+                        My Baby,
+                    </h2>
+                </div>
+                <div class="text-left sm:text-right">
+                    <p class="text-sm sm:text-base italic text-stone-500">
+                        With all my heart deep within my soul  • Always &amp; Forever
+                    </p>
+                </div>
+            </header>
+
+            <div class="space-y-6 text-lg sm:text-xl leading-relaxed text-stone-800 font-normal">
+                <p>
+                    There are days when I just sit back and look at everything, and I am still completely amazed that someone as incredible as you chose to share your life with me. As our 2nd anniversary approaches, I wanted to take a moment to step away from everything else and just express how deeply thankful I am for you. You aren't just an ordinary person in my life—you are the girl who showed me what it truly means to love and be loved. The past two years have easily been the best, most meaningful years of my life, and so much of that is because of the light, warmth, and grace you brought into my world.
+                </p>
+                <p>
+                    Thank you so much for every single laugh, every late-night conversation, and every moment where you made me feel like I mattered. Thank you for your patience, your kindness, and for trusting me the way you did. You have a heart of gold, and your strength, beauty, and intelligence always inspired me to want to be a better man. Even on my hardest days, just having you by my side was enough to make everything feel okay. I cherish the memories we’ve built, the quiet moments, the gala, the foodtrip, and the simple fact that out of everyone in this world, I got to call you mine.
+                </p>
+                <p class="font-handwriting text-2xl sm:text-3xl text-rose-800 text-center py-4 italic">
+                    "Ibibigay ko ang lahat, pati na rin ang 'yong pangarap..." 🎶
+                </p>
+            </div>
+
+            <section class="my-12 py-4">
+                <div class="text-center mb-7">
+                    <span class="font-handwriting text-2xl sm:text-3xl text-rose-800">
+                        Little Moments I Treasure ✨
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-5 px-2 sm:px-0 items-center">
+                    <figure class="polaroid-card polaroid-tilt-left rounded-lg mx-auto w-full max-w-[240px]">
+                        <div class="aspect-[4/5] w-full overflow-hidden rounded bg-rose-50 mb-3">
+                            <img 
+                                id="polaroid-img-1"
+                                src="photo1.jpg" 
+                                onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=600&q=80';" 
+                                alt="Our first favorite memory" 
+                                class="w-full h-full object-cover"
+                            >
+                        </div>
+                        <figcaption class="font-handwriting text-center text-xl text-stone-700 leading-tight pt-1">
+                            My favorite smile ♡
+                        </figcaption>
+                    </figure>
+
+                    <figure class="polaroid-card polaroid-tilt-center rounded-lg mx-auto w-full max-w-[240px]">
+                        <div class="aspect-[4/5] w-full overflow-hidden rounded bg-rose-50 mb-3">
+                            <img 
+                                id="polaroid-img-2"
+                                src="photo2.jpg" 
+                                onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=600&q=80';" 
+                                alt="Our second favorite memory" 
+                                class="w-full h-full object-cover"
+                            >
+                        </div>
+                        <figcaption class="font-handwriting text-center text-xl text-stone-700 leading-tight pt-1">
+                            Better together ✨
+                        </figcaption>
+                    </figure>
+
+                    <figure class="polaroid-card polaroid-tilt-right rounded-lg mx-auto w-full max-w-[240px]">
+                        <div class="aspect-[4/5] w-full overflow-hidden rounded bg-rose-50 mb-3">
+                            <img 
+                                id="polaroid-img-3"
+                                src="photo3.jpg" 
+                                onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1494774157365-9e04c6720e47?auto=format&fit=crop&w=600&q=80';" 
+                                alt="Our third favorite memory" 
+                                class="w-full h-full object-cover"
+                            >
+                        </div>
+                        <figcaption class="font-handwriting text-center text-xl text-stone-700 leading-tight pt-1">
+                            Unforgettable days 🌸
+                        </figcaption>
+                    </figure>
+                </div>
+            </section>
+
+            <div class="space-y-6 text-lg sm:text-xl leading-relaxed text-stone-800 mt-8">
+                <p>
+                    Thank you so much for being you, for loving me the way you did, and for giving me two of the most unforgettable years of my life.
+                </p>
+
+                <div class="pt-6 flex flex-col items-end text-right">
+                    <p class="italic text-stone-600 text-lg">With all my heart deep within my soul,</p>
+                    <p class="font-handwriting text-4xl sm:text-5xl text-rose-800 mt-1">
+                        Yours Always ♥
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-12 pt-8 border-t border-rose-200/80 text-center">
+                <p class="font-handwriting text-3xl sm:text-4xl text-rose-900 mb-2">
+                    One Last Little Question...
+                </p>
+                <p id="question-subtext" class="text-base sm:text-lg text-stone-600 italic mb-6">
+                    Did this letter made you smile, and can I take you out on a date soon?
+                </p>
+
+                <div id="response-buttons" class="flex flex-wrap items-center justify-center gap-4 font-sans-ui">
+                    <button 
+                        onclick="celebrateLove('Yes! I would love to go on a date with you! 💖')" 
+                        class="bg-rose-600 hover:bg-rose-700 text-white font-semibold px-7 py-3.5 rounded-full shadow-lg shadow-rose-500/30 transition transform hover:-translate-y-0.5 hover:scale-105 active:scale-95 text-sm sm:text-base flex items-center gap-2">
+                        <span>💖 Yes, I'd love that!</span>
+                    </button>
+
+                    <button 
+                        onclick="celebrateLove('1000% Yes & Miss na miss na rin kita! 🥰')" 
+                        class="bg-amber-50 hover:bg-rose-100 text-rose-800 border border-rose-300 font-semibold px-7 py-3.5 rounded-full shadow-sm transition transform hover:-translate-y-0.5 hover:scale-105 active:scale-95 text-sm sm:text-base flex items-center gap-2">
+                        <span>🥰 Sure, I miss you!</span>
+                    </button>
+                </div>
+
+                <div id="celebration-box" class="hidden mt-6 p-6 rounded-2xl bg-gradient-to-r from-rose-50 via-pink-50 to-rose-50 border border-rose-200 shadow-inner">
+                    <div class="text-3xl mb-2">🎉💖🌸</div>
+                    <h4 id="celebration-title" class="font-handwriting text-3xl text-rose-800 mb-1">
+                        Yay! You just made my whole day!
+                    </h4>
+                    <p class="text-stone-700 text-base sm:text-lg italic">
+                        Screenshot this or text me right now—I can't wait to see you! ✨
+                    </p>
+                    <button onclick="triggerHeartBurst()" class="mt-4 font-sans-ui text-xs font-medium text-rose-600 hover:text-rose-800 underline">
+                        ✨ BAWAL NO DITO BOSS AMO ✨
+                    </button>
+                </div>
+            </div>
+        </article>
+
+        <div class="text-center mt-6">
+            <button onclick="resetEnvelope()" class="font-sans-ui text-xs sm:text-sm text-rose-800/75 hover:text-rose-900 underline transition">
+                ↺ Fold letter back into the envelope
+            </button>
+        </div>
+    </main>
+
+    <script>
+        let isMusicPlaying = false;
+
+        function toggleBackgroundMusic() {
+            const bgMusic = document.getElementById('bg-music');
+            const musicIcon = document.getElementById('music-icon');
+            const musicLabel = document.getElementById('music-label');
+
+            if (!bgMusic) return;
+
+            if (bgMusic.paused) {
+                bgMusic.volume = 0.5;
+                bgMusic.play().then(() => {
+                    isMusicPlaying = true;
+                    musicIcon.textContent = '⏸️';
+                    musicLabel.textContent = 'Playing: 14';
+                }).catch(e => {
+                    console.log("Audio playback error:", e);
+                });
+            } else {
+                bgMusic.pause();
+                isMusicPlaying = false;
+                musicIcon.textContent = '🎵';
+                musicLabel.textContent = 'Play Song';
+            }
+        }
+
+        let isEnvelopeOpen = false;
+
+        function openEnvelope() {
+            if (isEnvelopeOpen) return;
+            isEnvelopeOpen = true;
+
+            const bgMusic = document.getElementById('bg-music');
+            if (bgMusic) {
+                bgMusic.volume = 0.5;
+                bgMusic.play().then(() => {
+                    isMusicPlaying = true;
+                    document.getElementById('music-icon').textContent = '⏸️';
+                    document.getElementById('music-label').textContent = 'Playing: 14';
+                }).catch(e => {});
+            }
+
+            const envelope = document.getElementById('envelope');
+            const envelopeScreen = document.getElementById('envelope-screen');
+            const letterScreen = document.getElementById('letter-screen');
+
+            triggerHeartBurst(24);
+
+            envelope.classList.add('is-open');
+
+            setTimeout(() => {
+                envelopeScreen.style.opacity = '0';
+                envelopeScreen.style.transform = 'scale(0.92) translateY(-20px)';
+                
+                setTimeout(() => {
+                    envelopeScreen.classList.add('hidden');
+                    letterScreen.classList.add('show-letter');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 450);
+            }, 950);
+        }
+
+        function resetEnvelope() {
+            isEnvelopeOpen = false;
+            const envelope = document.getElementById('envelope');
+            const envelopeScreen = document.getElementById('envelope-screen');
+            const letterScreen = document.getElementById('letter-screen');
+
+            letterScreen.classList.remove('show-letter');
+
+            envelope.classList.remove('is-open');
+            envelopeScreen.classList.remove('hidden');
+            
+            setTimeout(() => {
+                envelopeScreen.style.opacity = '1';
+                envelopeScreen.style.transform = 'scale(1) translateY(0)';
+            }, 50);
+        }
+
+        function celebrateLove(choiceText) {
+            triggerHeartBurst(55);
+
+            const celebrationBox = document.getElementById('celebration-box');
+            const celebrationTitle = document.getElementById('celebration-title');
+            
+            celebrationTitle.textContent = choiceText;
+            celebrationBox.classList.remove('hidden');
+            celebrationBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        const canvas = document.getElementById('petals-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let burstParticles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class FloatingPetal {
+            constructor() {
+                this.reset(true);
+            }
+
+            reset(initial = false) {
+                this.x = Math.random() * canvas.width;
+                this.y = initial ? Math.random() * canvas.height : -30;
+                this.size = Math.random() * 9 + 6;
+                this.speedY = Math.random() * 0.7 + 0.35;
+                this.speedX = (Math.random() - 0.5) * 0.6;
+                this.angle = Math.random() * Math.PI * 2;
+                this.spin = (Math.random() - 0.5) * 0.02;
+                this.opacity = Math.random() * 0.45 + 0.2;
+                this.isHeart = Math.random() > 0.45;
+                const colors = ['#fda4af', '#fb7185', '#f43f5e', '#fecdd3', '#f9a8d4'];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            update() {
+                this.y += this.speedY;
+                this.x += Math.sin(this.angle) * 0.4 + this.speedX;
+                this.angle += this.spin;
+
+                if (this.y > canvas.height + 30) {
+                    this.reset(false);
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.globalAlpha = this.opacity;
+                ctx.fillStyle = this.color;
+
+                if (this.isHeart) {
+                    drawHeartShape(ctx, this.size);
+                } else {
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, this.size * 0.6, this.size, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        class BurstHeart {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                const angle = Math.random() * Math.PI * 2;
+                const velocity = Math.random() * 7 + 2.5;
+                this.vx = Math.cos(angle) * velocity;
+                this.vy = Math.sin(angle) * velocity - 2.5;
+                this.gravity = 0.12;
+                this.size = Math.random() * 12 + 8;
+                this.alpha = 1;
+                this.decay = Math.random() * 0.012 + 0.008;
+                this.rotation = Math.random() * Math.PI * 2;
+                const colors = ['#e11d48', '#f43f5e', '#fb7185', '#fda4af', '#f59e0b'];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.alpha -= this.decay;
+                this.rotation += 0.03;
+            }
+
+            draw() {
+                if (this.alpha <= 0) return;
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.fillStyle = this.color;
+                drawHeartShape(ctx, this.size);
+                ctx.restore();
+            }
+        }
+
+        function drawHeartShape(context, size) {
+            const s = size / 15;
+            context.beginPath();
+            context.moveTo(0, 3 * s);
+            context.bezierCurveTo(0, 0, -7.5 * s, 0, -7.5 * s, 4.5 * s);
+            context.bezierCurveTo(-7.5 * s, 9 * s, 0, 12 * s, 0, 15 * s);
+            context.bezierCurveTo(0, 12 * s, 7.5 * s, 9 * s, 7.5 * s, 4.5 * s);
+            context.bezierCurveTo(7.5 * s, 0, 0, 0, 0, 3 * s);
+            context.fill();
+        }
+
+        function triggerHeartBurst(count = 40) {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            for (let i = 0; i < count; i++) {
+                burstParticles.push(new BurstHeart(centerX, centerY));
+            }
+        }
+
+        for (let i = 0; i < 28; i++) {
+            particles.push(new FloatingPetal());
+        }
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            for (let i = burstParticles.length - 1; i >= 0; i--) {
+                burstParticles[i].update();
+                burstParticles[i].draw();
+                if (burstParticles[i].alpha <= 0) {
+                    burstParticles.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(animateCanvas);
+        }
+
+        window.onload = function() {
+            animateCanvas();
+        };
+    </script>
+</body>
+</html>
